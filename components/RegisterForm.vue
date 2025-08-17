@@ -7,6 +7,9 @@ const floating_first_name = ref("");
 const floating_last_name = ref("");
 const floating_repeat_password = ref("");
 
+// Get the auth store
+const auth = useAuthStore();
+
 const handleRegister = () => {
     if (
         !floating_email.value.trim() ||
@@ -39,19 +42,30 @@ const handleRegister = () => {
         return;
     }
 
+    // Save credentials for login verification (keep snake_case for backwards compatibility)
     localStorage.setItem("email", floating_email.value);
     localStorage.setItem("password", floating_password.value);
     localStorage.setItem("first_name", floating_first_name.value);
     localStorage.setItem("last_name", floating_last_name.value);
 
-    alert("Registration successful");
-    navigateTo("/login");
+    // Automatically log the user in after successful registration
+    auth.login({
+        email: floating_email.value,
+        firstName: floating_first_name.value,
+        lastName: floating_last_name.value
+    });
 
+    alert("Registration successful! You are now logged in.");
+    
+    // Clear form
     floating_email.value = "";
     floating_password.value = "";
     floating_first_name.value = "";
     floating_last_name.value = "";
     floating_repeat_password.value = "";
+
+    // Redirect to profile or dashboard
+    navigateTo("/profile");
 };
 </script>
 

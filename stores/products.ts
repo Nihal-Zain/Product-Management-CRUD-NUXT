@@ -23,7 +23,7 @@ export const useProductStore = defineStore('products', {
     deleteProduct(index: number) {
       this.products.splice(index, 1)
       localStorage.setItem('products', JSON.stringify(this.products))
-    }
+    },
   }
 })
 

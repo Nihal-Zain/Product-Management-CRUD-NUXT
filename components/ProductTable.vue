@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const store = useProductStore()
 
 const showDescriptionModal = ref(false)
 const selectedDescription = ref("")
+
+// pagination
+const currentPage = ref(1)
+const itemsPerPage = ref(5) // change to 10, 20 etc. if needed
 
 onMounted(() => {
   store.loadProducts()
@@ -24,6 +28,20 @@ function openDescriptionModal(description: string) {
 function closeDescriptionModal() {
   showDescriptionModal.value = false
 }
+
+// computed for pagination
+const totalPages = computed(() => Math.ceil(store.products.length / itemsPerPage.value))
+
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return store.products.slice(start, start + itemsPerPage.value)
+})
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
 </script>
 
 <template>
@@ -41,11 +59,11 @@ function closeDescriptionModal() {
       </thead>
       <tbody>
         <tr
-          v-for="(product, index) in store.products"
+          v-for="(product, index) in paginatedProducts"
           :key="index"
           class="transition hover:bg-blue-50 dark:hover:bg-gray-800"
         >
-          <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
+          <td class="px-6 py-4 font-medium text-gray-500 dark:text-gray-400">
             {{ product.name }}
           </td>
           <td class="px-6 py-4 text-green-600 font-semibold">
@@ -98,10 +116,39 @@ function closeDescriptionModal() {
     </table>
   </div>
 
+  <!-- Pagination Controls -->
+  <div class="flex justify-center items-center space-x-2 mt-4">
+    <button
+      class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50"
+      :disabled="currentPage === 1"
+      @click="goToPage(currentPage - 1)"
+    >
+      Prev
+    </button>
+
+    <button
+      v-for="page in totalPages"
+      :key="page"
+      @click="goToPage(page)"
+      class="px-3 py-1 rounded"
+      :class="page === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'"
+    >
+      {{ page }}
+    </button>
+
+    <button
+      class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50"
+      :disabled="currentPage === totalPages"
+      @click="goToPage(currentPage + 1)"
+    >
+      Next
+    </button>
+  </div>
+
   <!-- Description Modal -->
   <div
     v-if="showDescriptionModal"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black opacity-80 "
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
     @click.self="closeDescriptionModal"
   >
     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg w-full max-h-[80vh] flex flex-col">

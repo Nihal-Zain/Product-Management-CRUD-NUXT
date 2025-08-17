@@ -1,19 +1,36 @@
 <script setup lang="ts">
 import { ref } from "vue";
+
 const email = ref("");
 const password = ref("");
+
+const auth = useAuthStore();
 
 const handleLogin = () => {
   if (!email.value.trim() || !password.value.trim()) {
     alert("All fields are required");
+    return;
   }
+
   const storedEmail = localStorage.getItem("email");
   const storedPassword = localStorage.getItem("password");
+  const storedFirstName = localStorage.getItem("first_name");
+  const storedLastName = localStorage.getItem("last_name");
 
   if (email.value === storedEmail && password.value === storedPassword) {
-    alert("Login successful!");
-    localStorage.setItem("isLoggedIn", "true");
-    window.location.href = "/";
+    // update pinia state & localStorage with complete user data
+    auth.login({ 
+      email: email.value,
+      firstName: storedFirstName || '',
+      lastName: storedLastName || ''
+    });
+
+    // Clear form
+    email.value = "";
+    password.value = "";
+
+    // navigate via Nuxt (not window.location.href)
+    return navigateTo("/");
   } else {
     alert("Invalid email or password");
   }
@@ -42,6 +59,11 @@ const handleLogin = () => {
       >
         Submit
       </button>
+
+      <p class="text-sm text-gray-500">
+        Don't have an account?
+        <NuxtLink to="/register" class="font-medium text-pink-600 hover:underline">Register Now</NuxtLink>
+      </p>
     </form>
   </div>
 </template>

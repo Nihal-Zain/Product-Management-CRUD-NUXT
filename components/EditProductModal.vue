@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { useProductStore } from "@/stores/products";
 
 interface Product {
   name: string;
